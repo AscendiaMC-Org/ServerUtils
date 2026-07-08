@@ -7,9 +7,9 @@ import com.velocitypowered.api.plugin.PluginContainer;
 import dev.frankheijden.minecraftreflection.ClassObject;
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import java.lang.reflect.Array;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 public class RVelocityEventManager {
@@ -35,8 +35,24 @@ public class RVelocityEventManager {
     ) {
         return (List<Object>) getHandlersByType(manager).get(eventClass).stream()
                 .filter(r -> plugins.contains(RHandlerRegistration.getPlugin(r).getInstance().orElse(null)))
-                .sorted(reflection.get(manager, "handlerComparator"))
+                .sorted(getHandlerComparator(manager))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves the handler comparator.
+     * The field is named 'handlerComparator' on Velocity and 'HANDLER_COMPARATOR' on Velocity-CTD.
+     */
+    @SuppressWarnings("rawtypes")
+    private static Comparator getHandlerComparator(EventManager manager) {
+        String fieldName = "handlerComparator";
+        try {
+            reflection.getClazz().getDeclaredField(fieldName);
+        } catch (NoSuchFieldException ex) {
+            fieldName = "HANDLER_COMPARATOR";
+        }
+
+        return reflection.get(manager, fieldName);
     }
 
     /**

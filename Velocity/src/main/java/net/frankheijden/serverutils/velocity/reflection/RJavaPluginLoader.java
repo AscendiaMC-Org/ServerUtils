@@ -7,6 +7,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import dev.frankheijden.minecraftreflection.ClassObject;
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.nio.file.Path;
 
 public class RJavaPluginLoader {
@@ -18,10 +19,25 @@ public class RJavaPluginLoader {
 
     /**
      * Constructs a new instance of a JavaPluginLoader.
+     * Velocity declares the constructor with the ProxyServer interface,
+     * whereas Velocity-CTD declares it with the VelocityServer implementation type.
      */
     public static Object newInstance(ProxyServer proxy, Path baseDirectory) {
+        Class<?> serverType = ProxyServer.class;
+        try {
+            reflection.getClazz().getDeclaredConstructor(ProxyServer.class, Path.class);
+        } catch (NoSuchMethodException ex) {
+            for (Constructor<?> constructor : reflection.getClazz().getDeclaredConstructors()) {
+                Class<?>[] types = constructor.getParameterTypes();
+                if (types.length == 2 && types[0].isInstance(proxy) && types[1] == Path.class) {
+                    serverType = types[0];
+                    break;
+                }
+            }
+        }
+
         return reflection.newInstance(
-                ClassObject.of(ProxyServer.class, proxy),
+                ClassObject.of(serverType, proxy),
                 ClassObject.of(Path.class, baseDirectory)
         );
     }
