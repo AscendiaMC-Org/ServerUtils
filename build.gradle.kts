@@ -120,7 +120,6 @@ repositories {
 
 dependencies {
     implementation(project(":Common", "shadow"))
-    implementation(project(":Bungee", "shadow"))
     implementation(project(":Velocity", "shadow"))
     implementation("net.kyori:adventure-text-serializer-gson:${VersionConstants.adventureVersion}") {
         exclude("net.kyori", "adventure-api")
@@ -144,8 +143,6 @@ tasks.withType<ShadowJar> {
 
 fun outputTasks(): List<Task> {
     return listOf(
-        ":Bukkit:shadowJar",
-        ":Bungee:shadowJar",
         ":Velocity:shadowJar",
     ).map { tasks.findByPath(it)!! }
 }
