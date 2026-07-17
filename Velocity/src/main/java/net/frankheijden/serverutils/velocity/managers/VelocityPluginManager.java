@@ -235,7 +235,7 @@ public class VelocityPluginManager extends AbstractPluginManager<PluginContainer
                 proxy.getEventManager(),
                 new ProxyShutdownEvent(),
                 pluginInstances
-        );
+        ).join();
 
         for (PluginContainer container : containers) {
             proxy.getEventManager().fire(new VelocityPluginDisableEvent(container, PluginEvent.Stage.POST));
